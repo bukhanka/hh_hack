@@ -17,7 +17,7 @@ cd backend
 cp env.example .env
 # Отредактируйте .env и добавьте свои API ключи
 pip install -r requirements.txt
-python run.py
+python3 start_api.py  # Запуск API сервера
 
 # 3. Frontend
 cd frontend
