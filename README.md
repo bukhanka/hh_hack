@@ -4,23 +4,36 @@
 
 ## 🚀 Быстрый старт
 
+### Автоматическая установка (рекомендуется)
+
 ```bash
-# 1. База данных
-docker-compose up -d
-docker exec -i finhack-db-1 psql -U postgres -d radar_db < backend/migrations/001_personal_news_tables.sql
+# 1. База данных (автоматически)
+# Скрипт проверит Docker, создаст контейнер PostgreSQL, 
+# создаст БД и пользователя, применит миграции
+./setup_database.sh
 
 # 2. Backend
 cd backend
-pip install -r requirements.txt
 cp env.example .env
 # Отредактируйте .env и добавьте свои API ключи
+pip install -r requirements.txt
 python run.py
 
 # 3. Frontend
 cd frontend
-npm install
 cp env.example .env.local
+npm install
 npm run dev
+```
+
+### Ручная установка
+
+```bash
+# 1. База данных
+docker-compose up -d
+docker exec -i finhack_postgres psql -U radar_user -d finhack < backend/migrations/001_personal_news_tables.sql
+
+# 2-3. Backend и Frontend (см. выше)
 ```
 
 **Доступ:** http://localhost:3000
