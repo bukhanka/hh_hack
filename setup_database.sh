@@ -103,16 +103,23 @@ else
     fi
 fi
 
-# Проверка пользователя
-USER_EXISTS=$(docker exec ${CONTAINER_NAME} psql -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'")
-
-if [ "$USER_EXISTS" = "1" ]; then
-    echo -e "${GREEN}✓${NC} Пользователь '${DB_USER}' существует"
+# Проверка пользователя (пробуем подключиться как radar_user)
+if docker exec ${CONTAINER_NAME} psql -U ${DB_USER} -d ${DB_NAME} -c "SELECT 1;" &> /dev/null; then
+    echo -e "${GREEN}✓${NC} Пользователь '${DB_USER}' существует и может подключаться"
 else
-    echo -e "${YELLOW}⚠${NC} Пользователь '${DB_USER}' не найден. Создаём..."
-    docker exec ${CONTAINER_NAME} psql -U postgres -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';" &> /dev/null
-    docker exec ${CONTAINER_NAME} psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" &> /dev/null
-    echo -e "${GREEN}✓${NC} Пользователь создан"
+    echo -e "${YELLOW}⚠${NC} Пользователь '${DB_USER}' не может подключиться"
+    echo "Проверяем через docker-compose.yml - пользователь должен был создаться автоматически"
+    
+    # Ждём ещё немного если контейнер только что стартовал
+    sleep 2
+    
+    if docker exec ${CONTAINER_NAME} psql -U ${DB_USER} -d ${DB_NAME} -c "SELECT 1;" &> /dev/null; then
+        echo -e "${GREEN}✓${NC} Пользователь готов к работе"
+    else
+        echo -e "${RED}❌ Не удалось подключиться как ${DB_USER}${NC}"
+        echo "Проверьте docker-compose.yml и переменные окружения контейнера"
+        exit 1
+    fi
 fi
 
 # Применение миграций

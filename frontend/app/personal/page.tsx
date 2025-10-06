@@ -10,8 +10,8 @@ import Link from 'next/link';
 import { personalApi } from '@/lib/api';
 import { logger } from '@/lib/logger';
 import type { 
-  PersonalFeedResponse, UserPreferences, RSSSource, 
-  FeedItem, UserStats, OnboardingStatus 
+  PersonalFeedResponse, UserPreferences,
+  FeedItem, UserStats, OnboardingStatus, FeedMetadata
 } from '@/lib/types';
 
 export default function PersonalNewsPage() {
@@ -19,7 +19,6 @@ export default function PersonalNewsPage() {
   const [persistedFeed, setPersistedFeed] = useState<FeedItem[]>([]);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
-  const [popularSources, setPopularSources] = useState<Record<string, RSSSource[]>>({});
   const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus | null>(null);
   
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +33,6 @@ export default function PersonalNewsPage() {
   const [viewMode, setViewMode] = useState<'new' | 'persisted'>('persisted');
   const [filterMode, setFilterMode] = useState<'all' | 'unread' | 'liked' | 'saved'>('all');
   const [compactView, setCompactView] = useState(false);
-  const [updateFrequency, setUpdateFrequency] = useState(60);
   
   const [userId] = useState('default');
   
@@ -42,23 +40,9 @@ export default function PersonalNewsPage() {
   const [newItemsCount, setNewItemsCount] = useState(0);
   const [showNewItemsBanner, setShowNewItemsBanner] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date>(new Date());
-  const [feedMetadata, setFeedMetadata] = useState<any>(null);
+  const [feedMetadata, setFeedMetadata] = useState<FeedMetadata | null>(null);
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
-
-  // Helper function to estimate reading time
-  const estimateReadingTime = (text: string): number => {
-    const words = text.split(/\s+/).length;
-    return Math.ceil(words / 200); // Average reading speed: 200 words/min
-  };
-
-  // Helper function to get priority badge
-  const getPriorityLevel = (score: number): { level: string; color: string } => {
-    if (score > 0.8) return { level: 'Высокий', color: 'bg-rose-500/20 text-rose-300 border-rose-500/40' };
-    if (score > 0.6) return { level: 'Средний', color: 'bg-amber-500/20 text-amber-300 border-amber-500/40' };
-    if (score > 0.4) return { level: 'Обычный', color: 'bg-blue-500/20 text-blue-300 border-blue-500/40' };
-    return { level: 'Низкий', color: 'bg-slate-500/20 text-slate-400 border-slate-500/40' };
-  };
 
   // Check for new items
   const checkForNewItems = async () => {
@@ -111,7 +95,7 @@ export default function PersonalNewsPage() {
       await personalApi.markFeedChecked(userId);
       
       return result.new_items_added;
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Error in incremental refresh', err);
       throw err;
     } finally {
@@ -123,13 +107,13 @@ export default function PersonalNewsPage() {
     logger.info('Personal news page initialized');
     checkOnboardingStatus();
     loadPreferences();
-    loadPopularSources();
     loadStats();
     loadPersistedFeed();
     loadFeedMetadata();
     
     // Initial check for new items
     checkForNewItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Polling for new items (every 2 minutes)
@@ -141,6 +125,7 @@ export default function PersonalNewsPage() {
     }, 2 * 60 * 1000); // 2 minutes
 
     return () => clearInterval(pollingInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, isRefreshing]);
 
   const checkOnboardingStatus = async () => {
@@ -163,14 +148,6 @@ export default function PersonalNewsPage() {
     }
   };
 
-  const loadPopularSources = async () => {
-    try {
-      const sources = await personalApi.getPopularSources();
-      setPopularSources(sources);
-    } catch (err) {
-      console.error('Error loading popular sources:', err);
-    }
-  };
 
   const loadStats = async () => {
     try {
@@ -183,7 +160,12 @@ export default function PersonalNewsPage() {
 
   const loadPersistedFeed = async () => {
     try {
-      const options: any = { limit: 20 };
+      const options: {
+        limit: number;
+        unread_only?: boolean;
+        liked_only?: boolean;
+        saved_only?: boolean;
+      } = { limit: 20 };
       
       if (filterMode === 'unread') options.unread_only = true;
       if (filterMode === 'liked') options.liked_only = true;
@@ -200,6 +182,7 @@ export default function PersonalNewsPage() {
     if (viewMode === 'persisted') {
       loadPersistedFeed();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterMode, viewMode]);
 
   const handleScan = async () => {
@@ -224,8 +207,9 @@ export default function PersonalNewsPage() {
       await loadPersistedFeed();
       await loadStats();
       await loadFeedMetadata();
-    } catch (err: any) {
-      setError(err.message || 'Не удалось загрузить новости');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Не удалось загрузить новости';
+      setError(errorMessage);
       logger.error('Error scanning news', err);
     } finally {
       setIsLoading(false);
@@ -780,7 +764,7 @@ export default function PersonalNewsPage() {
                     ].map((mode) => (
                       <button
                         key={mode.key}
-                        onClick={() => setFilterMode(mode.key as any)}
+                        onClick={() => setFilterMode(mode.key as 'all' | 'unread' | 'liked' | 'saved')}
                         className={`flex-shrink-0 rounded-md px-2 sm:px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap ${
                           filterMode === mode.key
                             ? 'bg-pink-500 text-white shadow-sm'

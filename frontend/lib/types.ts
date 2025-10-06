@@ -296,6 +296,6 @@ export interface RefreshFeedResponse {
   message: string;
   new_items_added: number;
   total_items: number;
-  items: any[];
+  items: PersonalNewsItem[];
 }
 

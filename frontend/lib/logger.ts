@@ -22,31 +22,31 @@ class Logger {
     return level >= this.level;
   }
 
-  private formatMessage(level: string, message: string, data?: any): string {
+  private formatMessage(level: string, message: string, data?: unknown): string {
     const timestamp = new Date().toISOString();
     const dataStr = data ? `\n${JSON.stringify(data, null, 2)}` : '';
     return `[${timestamp}] [${level}] ${message}${dataStr}`;
   }
 
-  debug(message: string, data?: any) {
+  debug(message: string, data?: unknown) {
     if (this.shouldLog(LogLevel.DEBUG)) {
       console.log(this.formatMessage('DEBUG', message, data));
     }
   }
 
-  info(message: string, data?: any) {
+  info(message: string, data?: unknown) {
     if (this.shouldLog(LogLevel.INFO)) {
       console.info(this.formatMessage('INFO', message, data));
     }
   }
 
-  warn(message: string, data?: any) {
+  warn(message: string, data?: unknown) {
     if (this.shouldLog(LogLevel.WARN)) {
       console.warn(this.formatMessage('WARN', message, data));
     }
   }
 
-  error(message: string, error?: any) {
+  error(message: string, error?: unknown) {
     if (this.shouldLog(LogLevel.ERROR)) {
       const errorData = error instanceof Error 
         ? { message: error.message, stack: error.stack }
@@ -56,20 +56,20 @@ class Logger {
   }
 
   // API specific loggers
-  apiRequest(endpoint: string, method: string, params?: any) {
+  apiRequest(endpoint: string, method: string, params?: unknown) {
     this.debug(`API Request: ${method} ${endpoint}`, params);
   }
 
-  apiResponse(endpoint: string, status: number, data?: any) {
+  apiResponse(endpoint: string, status: number, data?: unknown) {
     this.debug(`API Response: ${endpoint} [${status}]`, data);
   }
 
-  apiError(endpoint: string, error: any) {
+  apiError(endpoint: string, error: unknown) {
     this.error(`API Error: ${endpoint}`, error);
   }
 
   // User interaction loggers
-  userAction(action: string, details?: any) {
+  userAction(action: string, details?: unknown) {
     this.info(`User Action: ${action}`, details);
   }
 
