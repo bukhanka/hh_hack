@@ -77,27 +77,53 @@ echo -e "${GREEN}✓${NC} Права настроены"
 # Применение миграций
 echo -e "${YELLOW}[5/5]${NC} Применение миграций..."
 
+# Миграция 001: Основные таблицы
 if [ -f "backend/migrations/001_personal_news_tables.sql" ]; then
     # Проверяем существует ли уже таблица user_profiles
     TABLE_EXISTS=$(PGPASSWORD=${DB_PASSWORD} psql -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} -tAc "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_profiles');" 2>/dev/null)
     
     if [ "$TABLE_EXISTS" = "t" ]; then
-        echo -e "${GREEN}✓${NC} Таблицы уже существуют (миграция применена ранее)"
+        echo -e "${GREEN}✓${NC} Миграция 001 уже применена"
     else
         echo "Применяем миграцию 001_personal_news_tables.sql..."
         PGPASSWORD=${DB_PASSWORD} psql -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} < backend/migrations/001_personal_news_tables.sql > /dev/null 2>&1
         
         if [ $? -eq 0 ]; then
-            echo -e "${GREEN}✓${NC} Миграция применена успешно"
+            echo -e "${GREEN}✓${NC} Миграция 001 применена успешно"
         else
-            echo -e "${RED}❌ Ошибка при применении миграции${NC}"
+            echo -e "${RED}❌ Ошибка при применении миграции 001${NC}"
             echo "Попробуйте применить вручную:"
             echo "PGPASSWORD=${DB_PASSWORD} psql -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} < backend/migrations/001_personal_news_tables.sql"
             exit 1
         fi
     fi
 else
-    echo -e "${YELLOW}⚠${NC} Файл миграции не найден (backend/migrations/001_personal_news_tables.sql)"
+    echo -e "${YELLOW}⚠${NC} Файл миграции 001 не найден"
+    echo "Пропускаем..."
+fi
+
+# Миграция 002: Добавление last_feed_check
+if [ -f "backend/migrations/002_add_last_feed_check.sql" ]; then
+    # Проверяем существует ли уже колонка last_feed_check
+    COLUMN_EXISTS=$(PGPASSWORD=${DB_PASSWORD} psql -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} -tAc "SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_feed_check');" 2>/dev/null)
+    
+    if [ "$COLUMN_EXISTS" = "t" ]; then
+        echo -e "${GREEN}✓${NC} Миграция 002 уже применена"
+    else
+        echo "Применяем миграцию 002_add_last_feed_check.sql..."
+        PGPASSWORD=${DB_PASSWORD} psql -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} < backend/migrations/002_add_last_feed_check.sql > /dev/null 2>&1
+        
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓${NC} Миграция 002 применена успешно"
+        else
+            echo -e "${RED}❌ Ошибка при применении миграции 002${NC}"
+            echo "Попробуйте применить вручную:"
+            echo "PGPASSWORD=${DB_PASSWORD} psql -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} < backend/migrations/002_add_last_feed_check.sql"
+            exit 1
+        fi
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} Файл миграции 002 не найден"
     echo "Пропускаем..."
 fi
 
