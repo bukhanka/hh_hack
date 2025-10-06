@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: finhack_postgres
+    environment:
+      POSTGRES_DB: finhack
+      POSTGRES_USER: radar_user
+      POSTGRES_PASSWORD: radar_password_2024
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U radar_user -d finhack"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - finhack_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  finhack_network:
+    driver: bridge
+

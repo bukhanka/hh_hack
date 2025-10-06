@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  --background: #05070f;
+  --foreground: #e2e8f0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Space Grotesk", "Inter", "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: radial-gradient(circle at top, rgba(14, 116, 144, 0.35) 0%, rgba(5, 7, 15, 0.95) 45%, #05070f 75%);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Improve scrolling on mobile */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Better touch targets for buttons on mobile */
+@media (max-width: 640px) {
+  button, a {
+    min-height: 44px;
+  }
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background-color: rgba(250, 204, 21, 0.35);
+  color: var(--foreground);
+}
+
+.money-scene {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  opacity: 1;
+}
+
+.money-item {
+  position: absolute;
+  left: var(--start-offset, 0);
+  top: -20vh;
+  will-change: transform, opacity;
+}
+
+.money-item__inner {
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  animation: money-fall var(--duration, 30s) linear var(--delay, 0s) infinite;
+}
+
+.money-item__icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+  animation: money-spin var(--duration, 30s) ease-in-out var(--delay, 0s) infinite;
+  filter: blur(var(--blur, 0px));
+}
+
+.money-item__icon--coin {
+  filter: drop-shadow(0 8px 24px rgba(255, 215, 0, 0.5)) blur(var(--blur, 0px));
+}
+
+.money-item__icon--bill {
+  filter: drop-shadow(0 6px 20px rgba(61, 124, 31, 0.4)) blur(var(--blur, 0px));
+}
+
+.money-icon-svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes money-fall {
+  0% {
+    transform: translateX(0) translateY(-130vh) scale(var(--scale, 1));
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--opacity-target, 0.7);
+  }
+  50% {
+    transform: translateX(var(--drift, 20px)) translateY(15vh) scale(var(--scale, 1));
+    opacity: var(--opacity-target, 0.7);
+  }
+  90% {
+    opacity: var(--opacity-target, 0.7);
+  }
+  100% {
+    transform: translateX(0) translateY(130vh) scale(var(--scale, 1));
+    opacity: 0;
+  }
+}
+
+@keyframes money-spin {
+  0% {
+    transform: rotate(var(--rotate-start, 0deg)) rotateY(0deg);
+  }
+  50% {
+    transform: rotate(var(--rotate-end, 15deg)) rotateY(180deg);
+  }
+  100% {
+    transform: rotate(var(--rotate-start, 0deg)) rotateY(360deg);
+  }
+}

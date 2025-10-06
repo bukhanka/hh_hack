@@ -1,0 +1,38 @@
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite
+
+# Documentation (uncomment if these are generated/temporary)
+# DUAL_MODE_README.md
+# FRONTEND_MVP_COMPLETED.md
+# IMPLEMENTATION_SUMMARY.md
+# IMPROVEMENTS_PLAN.md
+# PHASE_1_COMPLETED.md
+# QUICK_START_GUIDE.md
+# SETUP_DATABASE.md
+# START_HERE.md
